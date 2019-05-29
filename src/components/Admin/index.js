@@ -1,9 +1,67 @@
-import React from 'react';
+import React, { Component } from "react";
 
-const Admin = () => (
-<div>
-  <h1>Admin</h1>
-</div>
+import { withFirebase } from "../Firebase";
+import { withAuthorization } from '../Session';
+
+class AdminPage extends Component {
+  state = {
+    loading: false,
+    users: []
+  };
+
+  componentDidMount() {
+    this.setState({ loading: true });
+
+    this.props.firebase.users().then((querySnapshot) => {
+      let usersList = []
+
+      querySnapshot.forEach((doc) => {
+        const key = doc.id;
+        const usersObject = doc.data()
+        usersList.push({ ...usersObject, uid: key })
+    });
+
+      this.setState({
+        users: usersList,
+        loading: false
+      });
+    });
+  }
+
+  render() {
+    const { users, loading } = this.state;
+
+    return (
+      <div>
+        <h1>Admin</h1>
+
+        {loading && <div>Loading ...</div>}
+
+        <UserList users={users} />
+      </div>
+    );
+  }
+}
+
+
+const UserList = ({ users }) => (
+  <ul>
+    {users.map(user => (
+      <li key={user.uid}>
+        <span>
+          <strong>ID:</strong> {user.uid}
+        </span>
+        <span>
+          <strong>E-Mail:</strong> {user.email}
+        </span>
+        <span>
+          <strong>Username:</strong> {user.username}
+        </span>
+      </li>
+    ))}
+  </ul>
 );
 
-export default Admin;
+const condition = authUser => !!authUser;
+
+export default withAuthorization(condition)(withFirebase(AdminPage));
