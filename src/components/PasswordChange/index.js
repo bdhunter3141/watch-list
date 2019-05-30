@@ -9,7 +9,7 @@ const INITIAL_STATE = {
 };
 
 class PasswordChangeForm extends Component {
-  state = { passwordOne: "", passwordTwo: "", error: null };
+  state = { ...INITIAL_STATE };
 
   onSubmit = event => {
     const { passwordOne } = this.state;

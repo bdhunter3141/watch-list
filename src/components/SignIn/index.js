@@ -24,11 +24,7 @@ const INITIAL_STATE = {
 
 class SignInFormBase extends Component {
 
-  state = {
-    email: '',
-    password: '',
-    error: null,
-  };
+  state = { ...INITIAL_STATE };
 
   onSubmit = event => {
     const { email, password } = this.state;

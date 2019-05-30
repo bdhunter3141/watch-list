@@ -1,9 +1,10 @@
-import React, { Component } from 'react';
-import { Link, withRouter } from 'react-router-dom';
-import { compose } from 'recompose';
+import React, { Component } from "react";
+import { Link, withRouter } from "react-router-dom";
+import { compose } from "recompose";
 
-import { withFirebase } from '../Firebase';
-import * as ROUTES from '../../constants/routes';
+import { withFirebase } from "../Firebase";
+import * as ROUTES from "../../constants/routes";
+import * as ROLES from '../../constants/roles';
 
 const SignUpPage = () => (
   <div>
@@ -13,36 +14,33 @@ const SignUpPage = () => (
 );
 
 const INITIAL_STATE = {
-  username: '',
-  email: '',
-  passwordOne: '',
-  passwordTwo: '',
-  error: null,
+  username: "",
+  email: "",
+  passwordOne: "",
+  passwordTwo: "",
+  isAdmin: false,
+  error: null
 };
 
 class SignUpFormBase extends Component {
-
-  state = {
-    username: '',
-    email: '',
-    passwordOne: '',
-    passwordTwo: '',
-    error: null,
-  };
+  state = { ...INITIAL_STATE };
 
   onSubmit = event => {
-    const { username, email, passwordOne } = this.state;
+    const { username, email, passwordOne, isAdmin } = this.state;
+    const roles = {};
+    if (isAdmin) {
+      roles[ROLES.ADMIN] = ROLES.ADMIN;
+    }
 
     this.props.firebase
       .doCreateUserWithEmailAndPassword(email, passwordOne)
       .then(authUser => {
         // Create a user in your Firebase realtime database
-        return this.props.firebase
-          .user(authUser.user.uid)
-          .set({
-            username,
-            email,
-          });
+        return this.props.firebase.user(authUser.user.uid).set({
+          username,
+          email,
+          roles,
+        });
       })
       .then(authUser => {
         this.setState({ ...INITIAL_STATE });
@@ -53,11 +51,14 @@ class SignUpFormBase extends Component {
       });
 
     event.preventDefault();
-
-  }
+  };
 
   onChange = event => {
     this.setState({ [event.target.name]: event.target.value });
+  };
+
+  onChangeCheckbox = event => {
+    this.setState({ [event.target.name]: event.target.checked });
   };
 
   render() {
@@ -66,14 +67,15 @@ class SignUpFormBase extends Component {
       email,
       passwordOne,
       passwordTwo,
-      error,
+      isAdmin,
+      error
     } = this.state;
 
     const isInvalid =
-    passwordOne !== passwordTwo ||
-    passwordOne === '' ||
-    email === '' ||
-    username === '';
+      passwordOne !== passwordTwo ||
+      passwordOne === "" ||
+      email === "" ||
+      username === "";
 
     return (
       <form onSubmit={this.onSubmit}>
@@ -105,7 +107,16 @@ class SignUpFormBase extends Component {
           type="password"
           placeholder="Confirm Password"
         />
-         <button disabled={isInvalid} type="submit">
+        <label>
+          Admin:
+          <input
+            name="isAdmin"
+            type="checkbox"
+            checked={isAdmin}
+            onChange={this.onChangeCheckbox}
+          />
+        </label>
+        <button disabled={isInvalid} type="submit">
           Sign Up
         </button>
 
@@ -123,7 +134,7 @@ const SignUpLink = () => (
 
 const SignUpForm = compose(
   withRouter,
-  withFirebase,
+  withFirebase
 )(SignUpFormBase);
 
 export default SignUpPage;

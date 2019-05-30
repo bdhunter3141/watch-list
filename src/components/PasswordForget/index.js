@@ -17,7 +17,7 @@ const INITIAL_STATE = {
 };
 
 class PasswordForgetFormBase extends Component {
-  state = { email: "", error: null };
+  state = { ...INITIAL_STATE };
 
   onSubmit = event => {
     const { email } = this.state;

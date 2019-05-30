@@ -1,6 +1,6 @@
-import app from 'firebase/app';
-import 'firebase/auth';
-import 'firebase/firestore';
+import app from "firebase/app";
+import "firebase/auth";
+import "firebase/firestore";
 
 const config = {
   apiKey: process.env.REACT_APP_API_KEY,
@@ -9,7 +9,7 @@ const config = {
   projectId: process.env.REACT_APP_PROJECT_ID,
   storageBucket: process.env.REACT_APP_STORAGE_BUCKET,
   messagingSenderId: process.env.REACT_APP_MESSAGING_SENDER_ID,
-  appId: process.env.REACT_APP_APP_ID,
+  appId: process.env.REACT_APP_APP_ID
 };
 
 class Firebase {
@@ -32,15 +32,38 @@ class Firebase {
 
   doPasswordReset = email => this.auth.sendPasswordResetEmail(email);
 
-  doPasswordUpdate = password =>
-    this.auth.currentUser.updatePassword(password);
+  doPasswordUpdate = password => this.auth.currentUser.updatePassword(password);
 
+  // *** Merge Auth and DB User API *** //
+  onAuthUserListener = (next, fallback) =>
+    this.auth.onAuthStateChanged(authUser => {
+      if (authUser) {
+        this.user(authUser.uid)
+          .get()
+          .then(doc => {
+            const dbUser = doc.data();
+            // default empty roles
+            if (!dbUser.roles) {
+              dbUser.roles = {};
+            }
+            // merge auth and db user
+            authUser = {
+              uid: authUser.uid,
+              email: authUser.email,
+              ...dbUser
+            };
+            next(authUser);
+          });
+      } else {
+        fallback();
+      }
+    });
 
   // *** User API ***
 
-  user = uid => this.db.collection('users').doc(uid);
+  user = uid => this.db.collection("users").doc(uid);
 
-  users = () => this.db.collection('users').get();
+  users = () => this.db.collection("users").get();
 }
 
 export default Firebase;
