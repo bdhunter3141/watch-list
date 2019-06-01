@@ -31,11 +31,14 @@ class Firebase {
   doSignInWithEmailAndPassword = (email, password) =>
     this.auth.signInWithEmailAndPassword(email, password);
 
-  doSignInWithGoogle = () =>
-    this.auth.signInWithPopup(this.googleProvider);
+  doSignInWithGoogle = () => this.auth.signInWithPopup(this.googleProvider);
 
-  doSignInWithFacebook = () =>
-    this.auth.signInWithPopup(this.facebookProvider);
+  doSignInWithFacebook = () => this.auth.signInWithPopup(this.facebookProvider);
+
+  doSendEmailVerification = () =>
+    this.auth.currentUser.sendEmailVerification({
+      url: process.env.REACT_APP_CONFIRMATION_EMAIL_REDIRECT
+    });
 
   doSignOut = () => this.auth.signOut();
 
@@ -59,6 +62,8 @@ class Firebase {
             authUser = {
               uid: authUser.uid,
               email: authUser.email,
+              emailVerified: authUser.emailVerified,
+              providerData: authUser.providerData,
               ...dbUser
             };
             next(authUser);

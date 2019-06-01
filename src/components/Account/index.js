@@ -1,7 +1,12 @@
 import React, { Component } from "react";
+import { compose } from "recompose";
 
 import PasswordChangeForm from "../PasswordChange";
-import { AuthUserContext, withAuthorization } from "../Session";
+import {
+  AuthUserContext,
+  withAuthorization,
+  withEmailVerification
+} from "../Session";
 import { withFirebase } from "../Firebase";
 
 const SIGN_IN_METHODS = [
@@ -118,7 +123,7 @@ class LoginManagementBase extends Component {
         this.setState({ activeSignInMethods, error: null })
       )
       .catch(error => this.setState({ error }));
-  }
+  };
 
   onSocialLoginLink = provider => {
     this.props.firebase.auth.currentUser
@@ -189,4 +194,7 @@ const LoginManagement = withFirebase(LoginManagementBase);
 
 const condition = authUser => !!authUser;
 
-export default withAuthorization(condition)(AccountPage);
+export default compose(
+  withEmailVerification,
+  withAuthorization(condition)
+)(AccountPage);

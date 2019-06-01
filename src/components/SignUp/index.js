@@ -4,7 +4,7 @@ import { compose } from "recompose";
 
 import { withFirebase } from "../Firebase";
 import * as ROUTES from "../../constants/routes";
-import * as ROLES from '../../constants/roles';
+import * as ROLES from "../../constants/roles";
 
 const SignUpPage = () => (
   <div>
@@ -22,7 +22,7 @@ const INITIAL_STATE = {
   error: null
 };
 
-const ERROR_CODE_ACCOUNT_EXISTS = 'auth/email-already-in-use';
+const ERROR_CODE_ACCOUNT_EXISTS = "auth/email-already-in-use";
 const ERROR_MSG_ACCOUNT_EXISTS = `
   An account with this E-Mail address already exists.
   Try to login with this account instead. If you think the
@@ -48,8 +48,11 @@ class SignUpFormBase extends Component {
         return this.props.firebase.user(authUser.user.uid).set({
           username,
           email,
-          roles,
+          roles
         });
+      })
+      .then(() => {
+        return this.props.firebase.doSendEmailVerification();
       })
       .then(authUser => {
         this.setState({ ...INITIAL_STATE });
@@ -58,7 +61,7 @@ class SignUpFormBase extends Component {
       .catch(error => {
         if (error.code === ERROR_CODE_ACCOUNT_EXISTS) {
           error.message = ERROR_MSG_ACCOUNT_EXISTS;
-}
+        }
         this.setState({ error });
       });
 
